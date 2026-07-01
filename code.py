@@ -1,14 +1,28 @@
 import string
+import unicodedata
 
 ALPHABET = string.ascii_lowercase
 ALPHABET_SIZE = len(ALPHABET)
 
 
+def remove_accents(text: str) -> str:
+    """
+    Remove acentos, preservando o restante do texto.
+    Ex:
+        á -> a
+        ç -> c
+        Ê -> E
+    """
+    normalized = unicodedata.normalize("NFD", text)
+
+    return "".join(
+        c
+        for c in normalized
+        if unicodedata.category(c) != "Mn"
+    )
+
+
 def fibonacci_sequence(length: int) -> list[int]:
-    """
-    Generate a Fibonacci sequence with the given length.
-    The first two values are 1 and 1.
-    """
     if length <= 0:
         return []
 
@@ -25,16 +39,17 @@ def fibonacci_sequence(length: int) -> list[int]:
 
 def caesar_fibonacci_encrypt(text: str) -> tuple[str, list[int]]:
     """
-    Encrypt text using a Caesar cipher whose shift follows
-    the Fibonacci sequence.
+    Cifra de César usando deslocamentos da sequência de Fibonacci.
 
-    Only alphabetic characters are encrypted.
-    Spaces and punctuation are preserved.
+    - Mantém maiúsculas/minúsculas.
+    - Remove apenas os acentos.
+    - Mantém pontuação, espaços e números.
     """
 
-    text = text.lower()
+    text = remove_accents(text)
 
-    letter_count = sum(char.isalpha() for char in text)
+    letter_count = sum(char.lower() in ALPHABET for char in text)
+
     fibonacci = fibonacci_sequence(letter_count)
 
     encrypted = []
@@ -44,15 +59,23 @@ def caesar_fibonacci_encrypt(text: str) -> tuple[str, list[int]]:
 
     for char in text:
 
-        if char.isalpha():
+        lower = char.lower()
+
+        if lower in ALPHABET:
 
             shift = fibonacci[fib_index] % ALPHABET_SIZE
             shifts.append(shift)
 
-            original_index = ALPHABET.index(char)
+            original_index = ALPHABET.index(lower)
             encrypted_index = (original_index + shift) % ALPHABET_SIZE
 
-            encrypted.append(ALPHABET[encrypted_index])
+            new_char = ALPHABET[encrypted_index]
+
+            # Preserva maiúsculas
+            if char.isupper():
+                new_char = new_char.upper()
+
+            encrypted.append(new_char)
 
             fib_index += 1
 
@@ -64,25 +87,17 @@ def caesar_fibonacci_encrypt(text: str) -> tuple[str, list[int]]:
 
 def main():
 
-    text = '''Tell me, Muse, of the man of many ways, who was driven
-far journeys, after he had sacked Troy's sacred citadel.
-Many were they whose cities he saw, whose minds he learned of,
-many the pains he suffered in his spirit on the wide sea,
-5 struggling for his own life and the homecoming of his companions.
-Even so he could not save his companions, hard though
-he strove to; they were destroyed by their own wild recklessness, fools,
-who devoured the oxen of Helios, the Sun God, and he took away the day
-of their homecoming. From some point'''
+    text = """Lorem ipsum"""
 
     encrypted_text, shifts = caesar_fibonacci_encrypt(text)
 
-    print("Original text:")
+    print("Original:")
     print(text)
 
-    print("\nEncrypted text:")
+    print("\nCriptografado:")
     print(encrypted_text)
 
-    print("\nFibonacci shifts:")
+    print("\nDeslocamentos:")
     print(shifts)
 
 
