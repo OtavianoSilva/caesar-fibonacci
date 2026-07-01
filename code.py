@@ -84,18 +84,68 @@ def caesar_fibonacci_encrypt(text: str) -> tuple[str, list[int]]:
 
     return "".join(encrypted), shifts
 
+def caesar_fibonacci_decrypt(text: str) -> str:
+    """
+    Descriptografa um texto cifrado com a cifra de César
+    usando deslocamentos da sequência de Fibonacci.
+
+    Preserva:
+    - Maiúsculas/minúsculas
+    - Espaços
+    - Pontuação
+    """
+
+    text = remove_accents(text)
+
+    letter_count = sum(char.lower() in ALPHABET for char in text)
+
+    fibonacci = fibonacci_sequence(letter_count)
+
+    decrypted = []
+
+    fib_index = 0
+
+    for char in text:
+
+        lower = char.lower()
+
+        if lower in ALPHABET:
+
+            shift = fibonacci[fib_index] % ALPHABET_SIZE
+
+            encrypted_index = ALPHABET.index(lower)
+            original_index = (encrypted_index - shift) % ALPHABET_SIZE
+
+            new_char = ALPHABET[original_index]
+
+            if char.isupper():
+                new_char = new_char.upper()
+
+            decrypted.append(new_char)
+
+            fib_index += 1
+
+        else:
+            decrypted.append(char)
+
+    return "".join(decrypted)
+
 
 def main():
 
     text = """Lorem ipsum"""
 
     encrypted_text, shifts = caesar_fibonacci_encrypt(text)
+    decrypted_text = caesar_fibonacci_decrypt(encrypted_text)
 
     print("Original:")
     print(text)
 
     print("\nCriptografado:")
     print(encrypted_text)
+
+    print("\nDescriptografado:")
+    print(decrypted_text)
 
     print("\nDeslocamentos:")
     print(shifts)
